@@ -33,6 +33,9 @@ const INTERNAL_ROUTES: { method?: string; pattern: RegExp }[] = [
   { method: 'POST', pattern: /^\/notifications\/?$/ },
   { method: 'PATCH', pattern: /^\/kyc\/contact\/?$/ },
   { method: 'GET', pattern: /^\/kyc\/status(\/|$)/ },
+  // Las transferencias solo entran por transfer-service (que exige la clave
+  // dinámica); nadie de afuera puede escribir directo en el ledger.
+  { method: 'POST', pattern: /^\/ledger\/transfers\/?$/ },
 ];
 
 export function isInternalRoute(method: string, path: string): boolean {
