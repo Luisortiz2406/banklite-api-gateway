@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { accessLog, blockInternalRoutes, proxyAll, requestId } from './gateway/proxy';
+import { accessLog, blockInternalRoutes, proxyAll, requestId, securityHeaders } from './gateway/proxy';
 import { rateLimit } from './gateway/rate-limit';
 import { loadUpstreams } from './gateway/routes';
 
@@ -9,6 +9,7 @@ async function bootstrap() {
   // Sin bodyParser: el cuerpo de la petición se reenvía intacto al microservicio.
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false });
   app.set('trust proxy', 1);
+  app.disable('x-powered-by');
 
   // CORS_ORIGINS: lista separada por comas; vacío o '*' permite cualquier origen.
   const origins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
@@ -19,6 +20,7 @@ async function bootstrap() {
   });
 
   const upstreams = loadUpstreams();
+  app.use(securityHeaders());
   app.use(requestId());
   app.use(accessLog());
   app.use(rateLimit());

@@ -13,7 +13,7 @@ interface Rule {
 }
 
 // Rutas que disparan correos/WhatsApp o prueban credenciales (clientes y empleados): límite más bajo.
-const SENSITIVE = /^\/auth\/(login|register|password-recovery\/send|email\/send|whatsapp\/send|admin\/login)\/?$/;
+const SENSITIVE = /^\/auth\/(login|register|password-recovery\/send|email\/send|whatsapp\/send|admin\/login|username\/check)\/?$/;
 
 const RULES: Rule[] = [
   { name: 'sensitive', max: Number(process.env.RATE_LIMIT_SENSITIVE_PER_MIN ?? 20), windowMs: 60_000, applies: (req) => SENSITIVE.test(req.path) },

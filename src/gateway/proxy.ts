@@ -17,6 +17,19 @@ export function requestId(): RequestHandler {
   };
 }
 
+/** Encabezados de seguridad para todas las respuestas de la API (que además nunca se cachean). */
+export function securityHeaders(): RequestHandler {
+  return (_req, res, next) => {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    next();
+  };
+}
+
 export function accessLog(): RequestHandler {
   return (req, res, next) => {
     const start = Date.now();
@@ -51,8 +64,11 @@ export function proxyTo(service: UpstreamService): RequestHandler {
       },
       proxyRes: (proxyRes) => {
         // El gateway es quien decide CORS; se descartan los encabezados del servicio.
+        // Tampoco se expone la tecnología de los servicios ni su política de caché.
         for (const header of Object.keys(proxyRes.headers)) {
-          if (header.startsWith('access-control-')) delete proxyRes.headers[header];
+          if (header.startsWith('access-control-') || header === 'x-powered-by' || header === 'cache-control' || header === 'etag') {
+            delete proxyRes.headers[header];
+          }
         }
       },
       error: (err, req, res) => {
