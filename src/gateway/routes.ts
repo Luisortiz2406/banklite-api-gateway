@@ -38,6 +38,22 @@ const INTERNAL_ROUTES: { method?: string; pattern: RegExp }[] = [
   { method: 'POST', pattern: /^\/ledger\/transfers\/?$/ },
 ];
 
+/**
+ * Rutas ambiguas que un servicio podría interpretar distinto que el gateway:
+ * barras dobles, barras o puntos codificados (%2F, %5C, %2E), barra invertida
+ * o segmentos '.' / '..'. Se rechazan antes de enrutar.
+ */
+export function isAmbiguousPath(rawPath: string): boolean {
+  return /\/\/|\\|%2f|%5c|%2e|(^|\/)\.{1,2}(\/|$)/i.test(rawPath);
+}
+
 export function isInternalRoute(method: string, path: string): boolean {
-  return INTERNAL_ROUTES.some((r) => (!r.method || r.method === method) && r.pattern.test(path));
+  // Express enruta sin distinguir mayúsculas: '/Internal' llega al mismo endpoint.
+  let normalized = path.toLowerCase();
+  try {
+    normalized = decodeURIComponent(normalized);
+  } catch {
+    return true; // codificación inválida: se trata como interna (404)
+  }
+  return INTERNAL_ROUTES.some((r) => (!r.method || r.method === method.toUpperCase()) && r.pattern.test(normalized));
 }

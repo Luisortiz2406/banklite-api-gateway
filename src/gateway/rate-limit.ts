@@ -13,10 +13,14 @@ interface Rule {
 }
 
 // Rutas que disparan correos/WhatsApp o prueban credenciales (clientes y empleados): límite más bajo.
-const SENSITIVE = /^\/auth\/(login|register|password-recovery\/send|email\/send|whatsapp\/send|admin\/login|username\/check)\/?$/;
+const SENSITIVE = /^\/auth\/(login|register|password-recovery\/send|email\/send|whatsapp\/send|admin\/login|username\/check)\/?$/i;
+// Verificación de códigos OTP: además del bloqueo de 5 intentos por código en
+// auth-service, se limita por IP para frenar la fuerza bruta repartida en muchos códigos.
+const CODE_VERIFY = /^\/auth\/(email\/verify|whatsapp\/verify|password-recovery\/reset)\/?$/i;
 
 const RULES: Rule[] = [
   { name: 'sensitive', max: Number(process.env.RATE_LIMIT_SENSITIVE_PER_MIN ?? 20), windowMs: 60_000, applies: (req) => SENSITIVE.test(req.path) },
+  { name: 'code-verify', max: Number(process.env.RATE_LIMIT_VERIFY_PER_MIN ?? 10), windowMs: 60_000, applies: (req) => CODE_VERIFY.test(req.path) },
   { name: 'global', max: Number(process.env.RATE_LIMIT_PER_MIN ?? 300), windowMs: 60_000, applies: () => true },
 ];
 

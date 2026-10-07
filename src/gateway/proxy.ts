@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { isInternalRoute, matchesPrefix, UpstreamService } from './routes';
+import { isAmbiguousPath, isInternalRoute, matchesPrefix, UpstreamService } from './routes';
 
 const logger = new Logger('Gateway');
 const PROXY_TIMEOUT_MS = Number(process.env.PROXY_TIMEOUT_MS ?? 15_000);
@@ -43,9 +43,15 @@ export function accessLog(): RequestHandler {
 
 export function blockInternalRoutes(): RequestHandler {
   return (req, res, next) => {
+    const rawPath = req.originalUrl.split('?')[0];
+    if (isAmbiguousPath(rawPath)) {
+      return res.status(400).json({ statusCode: 400, message: 'Ruta no válida' });
+    }
     if (isInternalRoute(req.method, req.path)) {
       return res.status(404).json({ statusCode: 404, message: 'Not Found' });
     }
+    // La clave interna nunca viene de afuera: no se reenvía aunque la manden.
+    delete req.headers['x-internal-key'];
     next();
   };
 }

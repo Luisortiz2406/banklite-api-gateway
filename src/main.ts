@@ -11,10 +11,8 @@ async function bootstrap() {
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
 
-  // CORS_ORIGINS: lista separada por comas; vacío o '*' permite cualquier origen.
-  const origins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
   app.enableCors({
-    origin: origins.length === 0 || origins.includes('*') ? true : origins,
+    origin: corsOrigins(),
     exposedHeaders: ['X-Request-Id', 'Retry-After'],
     maxAge: 600,
   });
@@ -31,6 +29,22 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`API Gateway escuchando en http://localhost:${port}`);
   for (const s of upstreams) console.log(`  ${s.prefixes.join(', ')} -> ${s.name} (${s.url})`);
+}
+
+/**
+ * CORS_ORIGINS: lista separada por comas de orígenes exactos (p. ej. el dominio
+ * del frontend en Railway). En producción es obligatoria y no admite '*': el
+ * gateway no arranca sin ella. Fuera de producción, si falta, solo se aceptan
+ * orígenes de localhost / 127.0.0.1 (cualquier puerto).
+ */
+function corsOrigins(): string[] | RegExp {
+  const origins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+  if (origins.includes('*')) throw new Error("CORS_ORIGINS no puede ser '*': lista los dominios del frontend.");
+  if (origins.length) return origins;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('CORS_ORIGINS es obligatoria en producción (dominio(s) del frontend, separados por comas).');
+  }
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 }
 
 bootstrap();
