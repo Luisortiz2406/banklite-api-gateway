@@ -17,6 +17,8 @@ export function loadUpstreams(): UpstreamService[] {
     { name: 'ledger-service', url: env('LEDGER_SERVICE_URL', 'http://localhost:3006'), prefixes: ['/ledger'] },
     { name: 'card-service', url: env('CARD_SERVICE_URL', 'http://localhost:3007'), prefixes: ['/cards'] },
     { name: 'transfer-service', url: env('TRANSFER_SERVICE_URL', 'http://localhost:3008'), prefixes: ['/transfers'] },
+    { name: 'fraud-service', url: env('FRAUD_SERVICE_URL', 'http://localhost:3009'), prefixes: ['/fraud'] },
+    { name: 'compliance-service', url: env('COMPLIANCE_SERVICE_URL', 'http://localhost:3010'), prefixes: ['/compliance'] },
   ];
 }
 
