@@ -19,6 +19,9 @@ export function loadUpstreams(): UpstreamService[] {
     { name: 'transfer-service', url: env('TRANSFER_SERVICE_URL', 'http://localhost:3008'), prefixes: ['/transfers'] },
     { name: 'fraud-service', url: env('FRAUD_SERVICE_URL', 'http://localhost:3009'), prefixes: ['/fraud'] },
     { name: 'compliance-service', url: env('COMPLIANCE_SERVICE_URL', 'http://localhost:3010'), prefixes: ['/compliance'] },
+    { name: 'payment-service', url: env('PAYMENT_SERVICE_URL', 'http://localhost:3011'), prefixes: ['/payments'] },
+    { name: 'rewards-service', url: env('REWARDS_SERVICE_URL', 'http://localhost:3012'), prefixes: ['/rewards'] },
+    { name: 'savings-service', url: env('SAVINGS_SERVICE_URL', 'http://localhost:3013'), prefixes: ['/savings'] },
   ];
 }
 
