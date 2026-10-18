@@ -15,10 +15,14 @@ export class HealthController {
         const start = Date.now();
         try {
           const res = await fetch(`${s.url}/health`, { signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS) });
-          const body = (await res.json().catch(() => ({}))) as { status?: string };
-          return { name: s.name, status: res.ok ? (body.status ?? 'ok') : 'down', latencyMs: Date.now() - start };
+          // Con la base caída el servicio responde 503 y su cuerpo dice "database": "down".
+          const body = (await res.json().catch(() => ({}))) as { status?: string; database?: string };
+          const database = body.database === 'ok' ? 'ok' : body.database === 'down' ? 'down' : 'unknown';
+          const status = res.ok && body.status === 'ok' && database === 'ok' ? 'ok' : 'down';
+          return { name: s.name, status, database, latencyMs: Date.now() - start };
         } catch {
-          return { name: s.name, status: 'down', latencyMs: Date.now() - start };
+          // El servicio no respondió: no se sabe nada de su base.
+          return { name: s.name, status: 'down', database: 'unknown', latencyMs: Date.now() - start };
         }
       }),
     );

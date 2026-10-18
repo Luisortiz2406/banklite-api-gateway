@@ -59,7 +59,7 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/health` | Estado del gateway y de los 12 microservicios (latencia de cada uno). |
+| GET | `/health` | Estado de los 12 microservicios: por cada uno, `status` (arriba y con su base respondiendo), `database` (`ok`, `down` o `unknown` si el servicio no contestó) y latencia. El total es `ok` solo si todos lo están; si no, `degraded`. |
 | GET | `/` | Mapa de prefijos → microservicios. |
 | * | `/<prefijo>/...` | Se reenvía al microservicio (ver tabla de arriba y el README de cada servicio). |
 
@@ -97,5 +97,6 @@ npm test
 
 Desplegado en Railway con dominio público:
 
-- Gateway: https://api-gateway-production-dd7f.up.railway.app · estado: https://api-gateway-production-dd7f.up.railway.app/health
+- Gateway: https://api-gateway-production-dd7f.up.railway.app
+- Estado de los 12 servicios y de sus bases: https://api-gateway-production-dd7f.up.railway.app/health
 - Aplicación web: https://frontend-production-eff3c.up.railway.app
