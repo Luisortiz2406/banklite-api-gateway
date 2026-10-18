@@ -1,6 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 import { loadUpstreams } from './gateway/routes';
 
+// Un servicio que no responde /health en este tiempo se muestra como caído.
+const HEALTH_CHECK_TIMEOUT_MS = 3_000;
+
 @Controller()
 export class HealthController {
   private readonly upstreams = loadUpstreams();
@@ -11,7 +14,7 @@ export class HealthController {
       this.upstreams.map(async (s) => {
         const start = Date.now();
         try {
-          const res = await fetch(`${s.url}/health`, { signal: AbortSignal.timeout(3000) });
+          const res = await fetch(`${s.url}/health`, { signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS) });
           const body = (await res.json().catch(() => ({}))) as { status?: string };
           return { name: s.name, status: res.ok ? (body.status ?? 'ok') : 'down', latencyMs: Date.now() - start };
         } catch {
