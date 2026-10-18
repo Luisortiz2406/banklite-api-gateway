@@ -13,7 +13,7 @@ export class HealthController {
         try {
           const res = await fetch(`${s.url}/health`, { signal: AbortSignal.timeout(3000) });
           const body = (await res.json().catch(() => ({}))) as { status?: string };
-          return { name: s.name, status: res.ok ? body.status ?? 'ok' : 'down', latencyMs: Date.now() - start };
+          return { name: s.name, status: res.ok ? (body.status ?? 'ok') : 'down', latencyMs: Date.now() - start };
         } catch {
           return { name: s.name, status: 'down', latencyMs: Date.now() - start };
         }

@@ -35,7 +35,9 @@ export function accessLog(): RequestHandler {
     const start = Date.now();
     res.on('finish', () => {
       const upstream = res.getHeader('X-Upstream-Service') ?? '-';
-      logger.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms -> ${upstream} [${req.headers['x-request-id']}]`);
+      logger.log(
+        `${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms -> ${upstream} [${req.headers['x-request-id']}]`,
+      );
     });
     next();
   };
@@ -72,7 +74,12 @@ export function proxyTo(service: UpstreamService): RequestHandler {
         // El gateway es quien decide CORS; se descartan los encabezados del servicio.
         // Tampoco se expone la tecnología de los servicios ni su política de caché.
         for (const header of Object.keys(proxyRes.headers)) {
-          if (header.startsWith('access-control-') || header === 'x-powered-by' || header === 'cache-control' || header === 'etag') {
+          if (
+            header.startsWith('access-control-') ||
+            header === 'x-powered-by' ||
+            header === 'cache-control' ||
+            header === 'etag'
+          ) {
             delete proxyRes.headers[header];
           }
         }

@@ -40,7 +40,10 @@ async function bootstrap() {
  * orígenes de localhost / 127.0.0.1 (cualquier puerto).
  */
 function corsOrigins(): string[] | RegExp {
-  const origins = (process.env.CORS_ORIGINS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
+  const origins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   if (origins.includes('*')) throw new Error("CORS_ORIGINS no puede ser '*': lista los dominios del frontend.");
   if (origins.length) return origins;
   if (process.env.NODE_ENV === 'production') {
