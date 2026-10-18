@@ -51,13 +51,19 @@ describe('GET /health del gateway', () => {
   it('un servicio que no responde queda down con la base desconocida', async () => {
     mockFetch({ 'card-service': 'sin-respuesta' });
     const result = await new HealthController().check();
-    expect(result.services.find((s) => s.name === 'card-service')).toMatchObject({ status: 'down', database: 'unknown' });
+    expect(result.services.find((s) => s.name === 'card-service')).toMatchObject({
+      status: 'down',
+      database: 'unknown',
+    });
     expect(result.status).toBe('degraded');
   });
 
   it('un 200 que no informa la base no cuenta como ok', async () => {
     mockFetch({ 'auth-service': { status: 200, body: { status: 'ok' } } });
     const result = await new HealthController().check();
-    expect(result.services.find((s) => s.name === 'auth-service')).toMatchObject({ status: 'down', database: 'unknown' });
+    expect(result.services.find((s) => s.name === 'auth-service')).toMatchObject({
+      status: 'down',
+      database: 'unknown',
+    });
   });
 });
