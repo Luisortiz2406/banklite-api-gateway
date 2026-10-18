@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
@@ -27,8 +28,9 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 8080;
   await app.listen(port);
-  console.log(`API Gateway escuchando en http://localhost:${port}`);
-  for (const s of upstreams) console.log(`  ${s.prefixes.join(', ')} -> ${s.name} (${s.url})`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`API Gateway escuchando en http://localhost:${port}`);
+  for (const s of upstreams) logger.log(`${s.prefixes.join(', ')} -> ${s.name} (${s.url})`);
 }
 
 /**
