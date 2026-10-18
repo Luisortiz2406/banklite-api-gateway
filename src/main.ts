@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { accessLog, blockInternalRoutes, proxyAll, requestId, securityHeaders } from './gateway/proxy';
 import { rateLimit } from './gateway/rate-limit';
 import { loadUpstreams } from './gateway/routes';
+import { staffSessionCheck } from './gateway/staff-session';
 
 async function bootstrap() {
   // Sin bodyParser: el cuerpo de la petición se reenvía intacto al microservicio.
@@ -24,6 +25,9 @@ async function bootstrap() {
   app.use(accessLog());
   app.use(rateLimit());
   app.use(blockInternalRoutes());
+  // Sesiones del panel administrativo: auth-service decide si siguen vigentes
+  const auth = upstreams.find((s) => s.name === 'auth-service');
+  if (auth) app.use(staffSessionCheck(auth.url));
   app.use(proxyAll(upstreams));
 
   const port = process.env.PORT ?? 8080;
