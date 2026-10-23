@@ -1,5 +1,7 @@
 # API Gateway (`api-gateway`)
 
+[![CI](https://github.com/Luisortiz2406/banklite-api-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/Luisortiz2406/banklite-api-gateway/actions/workflows/ci.yml)
+
 Único punto de entrada público de **BankLite**. Recibe todas las peticiones del
 frontend y las reenvía al microservicio que corresponde según el prefijo de la ruta.
 
@@ -95,8 +97,32 @@ npm test
 
 ## Despliegue
 
-Desplegado en Railway con dominio público:
+Desplegado en Railway **desde este repositorio** (rama `main`), con dominio público.
+`railway.json` en la raíz define el build por `Dockerfile` y el health check en
+`/health`; cada push a `main` redespliega el gateway.
 
 - Gateway: https://api-gateway-production-dd7f.up.railway.app
-- Estado de los 12 servicios y de sus bases: https://api-gateway-production-dd7f.up.railway.app/health
+- Estado de los 12 servicios y de sus bases: [https://api-gateway-production-dd7f.up.railway.app/health](https://api-gateway-production-dd7f.up.railway.app/health)
 - Aplicación web: https://frontend-production-eff3c.up.railway.app
+
+## Repositorios relacionados
+
+Servicios de BankLite con los que se comunica este. **Llama a** / **Lo llama**: HTTP
+por la red interna; **Recibe** / **Envía**: eventos en RabbitMQ. Cada uno vive y se
+despliega desde su propio repositorio.
+
+| Repositorio | Relación con este servicio |
+|---|---|
+| [banklite-frontend](https://github.com/Luisortiz2406/banklite-frontend) | **Lo llama:** la aplicación web y el panel admin usan la API por el gateway |
+| [banklite-auth-service](https://github.com/Luisortiz2406/banklite-auth-service) | **Llama a:** `/auth` (registro, login, clave dinámica) y sesión del panel |
+| [banklite-account-service](https://github.com/Luisortiz2406/banklite-account-service) | **Llama a:** `/accounts` (cuentas, límites, llaves Bre-B) |
+| [banklite-kyc-service](https://github.com/Luisortiz2406/banklite-kyc-service) | **Llama a:** `/kyc` |
+| [banklite-notification-service](https://github.com/Luisortiz2406/banklite-notification-service) | **Llama a:** `/notifications` |
+| [banklite-ledger-service](https://github.com/Luisortiz2406/banklite-ledger-service) | **Llama a:** `/ledger` (saldos y movimientos) |
+| [banklite-card-service](https://github.com/Luisortiz2406/banklite-card-service) | **Llama a:** `/cards` |
+| [banklite-transfer-service](https://github.com/Luisortiz2406/banklite-transfer-service) | **Llama a:** `/transfers` |
+| [banklite-fraud-service](https://github.com/Luisortiz2406/banklite-fraud-service) | **Llama a:** `/fraud` (panel admin) |
+| [banklite-compliance-service](https://github.com/Luisortiz2406/banklite-compliance-service) | **Llama a:** `/compliance` (panel admin) |
+| [banklite-payment-service](https://github.com/Luisortiz2406/banklite-payment-service) | **Llama a:** `/payments` |
+| [banklite-rewards-service](https://github.com/Luisortiz2406/banklite-rewards-service) | **Llama a:** `/rewards` |
+| [banklite-savings-service](https://github.com/Luisortiz2406/banklite-savings-service) | **Llama a:** `/savings` |
