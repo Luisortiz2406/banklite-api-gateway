@@ -10,6 +10,7 @@ import {
   securityHeaders,
   webhookBodyLimit,
 } from './gateway/proxy';
+import { clientIp, clientIpDiagnostics } from './gateway/client-ip';
 import { rateLimit } from './gateway/rate-limit';
 import { loadUpstreams } from './gateway/routes';
 import { staffSessionCheck } from './gateway/staff-session';
@@ -30,7 +31,9 @@ async function bootstrap() {
   app.use(securityHeaders());
   app.use(requestId());
   app.use(accessLog());
+  app.use(clientIp());
   app.use(rateLimit());
+  app.use(clientIpDiagnostics());
   app.use(blockInternalRoutes());
   app.use(webhookBodyLimit());
   // Sesiones del panel administrativo: auth-service decide si siguen vigentes

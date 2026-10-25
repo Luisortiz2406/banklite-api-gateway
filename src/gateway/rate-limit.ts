@@ -58,7 +58,8 @@ export function rateLimit() {
     const now = Date.now();
     for (const rule of RULES) {
       if (!rule.applies(req)) continue;
-      const key = `${rule.name}:${req.ip}`;
+      // IP real del cliente (middleware clientIp); req.ip solo si no se pudo resolver.
+      const key = `${rule.name}:${(req as Request & { clientIp?: string | null }).clientIp ?? req.ip}`;
       let w = windows.get(key);
       if (!w || w.resetAt <= now) {
         w = { count: 0, resetAt: now + rule.windowMs };
