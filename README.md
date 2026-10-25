@@ -30,7 +30,11 @@ frontend y las reenvía al microservicio que corresponde según el prefijo de la
   responde 404 desde afuera y nunca reenvía un `x-internal-key` que venga del cliente.
 - Rechaza rutas ambiguas (barras dobles, `%2F`, `..`) antes de enrutar.
 - **CORS** solo para los dominios del frontend (`CORS_ORIGINS`).
-- **Límite de peticiones por IP**: global, rutas sensibles (login, registro) y envío de códigos.
+- **IP real del cliente**: la toma del encabezado del proxy de Railway (`CLIENT_IP_HEADER=x-real-ip`)
+  o de la conexión directa, la valida y se la pasa a los servicios en `x-client-ip` (descarta la
+  que mande el cliente). No se escribe en los logs. Comprobación: `GET /health/client-ip` con
+  `CLIENT_IP_DEBUG=true` responde a quien llama solo su prefijo `/24` (o `/48`).
+- **Límite de peticiones por IP del cliente**: global, rutas sensibles (login, registro) y envío de códigos.
 - **Webhook de Wompi** (`POST /deposits/wompi/events`): ruta pública sin JWT (la autentica la firma
   del evento en deposit-service), con límite propio de peticiones por minuto y de tamaño del cuerpo
   (exige `Content-Length`: 411 sin él, 413 si supera `WEBHOOK_MAX_BODY_BYTES`).
@@ -95,6 +99,8 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 | `RATE_LIMIT_VERIFY_PER_MIN` | No | `10` | Límite para el envío de códigos de verificación. |
 | `RATE_LIMIT_WEBHOOK_PER_MIN` | No | `60` | Límite del webhook de Wompi. |
 | `WEBHOOK_MAX_BODY_BYTES` | No | `65536` | Tamaño máximo del cuerpo del webhook de Wompi. |
+| `CLIENT_IP_HEADER` | En Railway | `x-real-ip` | Encabezado del proxy de entrada con la IP del cliente. Vacía: la conexión directa (local). |
+| `CLIENT_IP_DEBUG` | No | `false` | `true` habilita `GET /health/client-ip` (prefijo y fuente de la IP de quien llama), solo para comprobar la configuración. |
 
 ## Pruebas
 
