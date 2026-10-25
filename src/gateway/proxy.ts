@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { isAmbiguousPath, isInternalRoute, matchesPrefix, UpstreamService } from './routes';
+import { isAmbiguousPath, isInternalRoute, isWebhookRoute, matchesPrefix, UpstreamService } from './routes';
 
 const logger = new Logger('Gateway');
 const PROXY_TIMEOUT_MS = Number(process.env.PROXY_TIMEOUT_MS ?? 15_000);
@@ -54,6 +54,26 @@ export function blockInternalRoutes(): RequestHandler {
     }
     // La clave interna nunca viene de afuera: no se reenvía aunque la manden.
     delete req.headers['x-internal-key'];
+    next();
+  };
+}
+
+/**
+ * Tope del cuerpo en los webhooks públicos (WEBHOOK_MAX_BODY_BYTES, 64 KB por
+ * defecto). El gateway no lee el cuerpo (lo reenvía tal cual), así que exige
+ * Content-Length y lo compara antes de reenviar: 411 sin él, 413 si es mayor.
+ */
+export function webhookBodyLimit(): RequestHandler {
+  const maxBytes = Number(process.env.WEBHOOK_MAX_BODY_BYTES ?? 64 * 1024);
+  return (req, res, next) => {
+    if (!isWebhookRoute(req.method, req.path)) return next();
+    const header = req.headers['content-length'];
+    if (header === undefined || !/^\d+$/.test(header)) {
+      return res.status(411).json({ statusCode: 411, message: 'Content-Length requerido.' });
+    }
+    if (Number(header) > maxBytes) {
+      return res.status(413).json({ statusCode: 413, message: 'El cuerpo de la petición es demasiado grande.' });
+    }
     next();
   };
 }

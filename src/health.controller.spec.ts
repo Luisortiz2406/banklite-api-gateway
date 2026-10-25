@@ -36,7 +36,7 @@ describe('GET /health del gateway', () => {
     mockFetch({});
     const result = await new HealthController().check();
     expect(result.status).toBe('ok');
-    expect(result.services).toHaveLength(12);
+    expect(result.services).toHaveLength(13);
     expect(result.services.every((s) => s.status === 'ok' && s.database === 'ok')).toBe(true);
   });
 
