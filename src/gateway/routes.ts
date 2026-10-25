@@ -30,6 +30,7 @@ export function loadUpstreams(): UpstreamService[] {
     { name: 'payment-service', url: env('PAYMENT_SERVICE_URL', 'http://localhost:3011'), prefixes: ['/payments'] },
     { name: 'rewards-service', url: env('REWARDS_SERVICE_URL', 'http://localhost:3012'), prefixes: ['/rewards'] },
     { name: 'savings-service', url: env('SAVINGS_SERVICE_URL', 'http://localhost:3013'), prefixes: ['/savings'] },
+    { name: 'deposit-service', url: env('DEPOSIT_SERVICE_URL', 'http://localhost:3014'), prefixes: ['/deposits'] },
   ];
 }
 
@@ -69,4 +70,13 @@ export function isInternalRoute(method: string, path: string): boolean {
     return true; // codificación inválida: se trata como interna (404)
   }
   return INTERNAL_ROUTES.some((r) => (!r.method || r.method === method.toUpperCase()) && r.pattern.test(normalized));
+}
+
+/**
+ * Webhooks de terceros (eventos de Wompi): rutas públicas sin JWT, autenticadas
+ * por la firma del evento en el servicio. El gateway les aplica un límite de
+ * peticiones y de tamaño del cuerpo propios.
+ */
+export function isWebhookRoute(method: string, path: string): boolean {
+  return method.toUpperCase() === 'POST' && /^\/deposits\/wompi\/events\/?$/i.test(path);
 }

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { isWebhookRoute } from './routes';
 
 interface Window {
   count: number;
@@ -31,6 +32,13 @@ const RULES: Rule[] = [
     max: Number(process.env.RATE_LIMIT_VERIFY_PER_MIN ?? 10),
     windowMs: 60_000,
     applies: (req) => CODE_VERIFY.test(req.path),
+  },
+  {
+    // Webhook de Wompi: un evento por cambio de estado de una transacción.
+    name: 'webhook',
+    max: Number(process.env.RATE_LIMIT_WEBHOOK_PER_MIN ?? 60),
+    windowMs: 60_000,
+    applies: (req) => isWebhookRoute(req.method, req.path),
   },
   { name: 'global', max: Number(process.env.RATE_LIMIT_PER_MIN ?? 300), windowMs: 60_000, applies: () => true },
 ];

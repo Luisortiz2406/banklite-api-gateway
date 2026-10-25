@@ -23,6 +23,7 @@ frontend y las reenvía al microservicio que corresponde según el prefijo de la
 | `/payments` | payment-service | 3011 |
 | `/rewards` | rewards-service | 3012 |
 | `/savings` | savings-service | 3013 |
+| `/deposits` | deposit-service | 3014 |
 
 - **Bloquea las rutas internas** (`/internal/*`, `/ledger/internal/*`, `/otp/*`,
   `POST /notifications`, `PATCH /kyc/contact`, `GET /kyc/status/*`, `POST /ledger/transfers`):
@@ -30,6 +31,9 @@ frontend y las reenvía al microservicio que corresponde según el prefijo de la
 - Rechaza rutas ambiguas (barras dobles, `%2F`, `..`) antes de enrutar.
 - **CORS** solo para los dominios del frontend (`CORS_ORIGINS`).
 - **Límite de peticiones por IP**: global, rutas sensibles (login, registro) y envío de códigos.
+- **Webhook de Wompi** (`POST /deposits/wompi/events`): ruta pública sin JWT (la autentica la firma
+  del evento en deposit-service), con límite propio de peticiones por minuto y de tamaño del cuerpo
+  (exige `Content-Length`: 411 sin él, 413 si supera `WEBHOOK_MAX_BODY_BYTES`).
 - **Sesión del panel**: en cada ruta `/…/admin/` consulta `GET /auth/admin/session`
   (caché de 5 s); si auth-service no responde, falla cerrado con 503.
 - Tiempo máximo de espera por servicio (`PROXY_TIMEOUT_MS`) → 504.
@@ -61,7 +65,7 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/health` | Estado de los 12 microservicios: por cada uno, `status` (arriba y con su base respondiendo), `database` (`ok`, `down` o `unknown` si el servicio no contestó) y latencia. El total es `ok` solo si todos lo están; si no, `degraded`. |
+| GET | `/health` | Estado de los 13 microservicios: por cada uno, `status` (arriba y con su base respondiendo), `database` (`ok`, `down` o `unknown` si el servicio no contestó) y latencia. El total es `ok` solo si todos lo están; si no, `degraded`. |
 | GET | `/` | Mapa de prefijos → microservicios. |
 | * | `/<prefijo>/...` | Se reenvía al microservicio (ver tabla de arriba y el README de cada servicio). |
 
@@ -84,10 +88,13 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 | `PAYMENT_SERVICE_URL` | Sí | `http://localhost:3011` | URL interna de payment-service. |
 | `REWARDS_SERVICE_URL` | Sí | `http://localhost:3012` | URL interna de rewards-service. |
 | `SAVINGS_SERVICE_URL` | Sí | `http://localhost:3013` | URL interna de savings-service. |
+| `DEPOSIT_SERVICE_URL` | Sí | `http://localhost:3014` | URL interna de deposit-service. |
 | `PROXY_TIMEOUT_MS` | No | `15000` | Espera máxima a un microservicio antes de responder 504. |
 | `RATE_LIMIT_PER_MIN` | No | `300` | Peticiones por minuto por IP (global). |
 | `RATE_LIMIT_SENSITIVE_PER_MIN` | No | `20` | Límite para rutas sensibles (login, registro). |
 | `RATE_LIMIT_VERIFY_PER_MIN` | No | `10` | Límite para el envío de códigos de verificación. |
+| `RATE_LIMIT_WEBHOOK_PER_MIN` | No | `60` | Límite del webhook de Wompi. |
+| `WEBHOOK_MAX_BODY_BYTES` | No | `65536` | Tamaño máximo del cuerpo del webhook de Wompi. |
 
 ## Pruebas
 
@@ -102,7 +109,7 @@ Desplegado en Railway **desde este repositorio** (rama `main`), con dominio púb
 `/health`; cada push a `main` redespliega el gateway.
 
 - Gateway: https://api-gateway-production-dd7f.up.railway.app
-- Estado de los 12 servicios y de sus bases: [https://api-gateway-production-dd7f.up.railway.app/health](https://api-gateway-production-dd7f.up.railway.app/health)
+- Estado de los 13 servicios y de sus bases: [https://api-gateway-production-dd7f.up.railway.app/health](https://api-gateway-production-dd7f.up.railway.app/health)
 - Aplicación web: https://frontend-production-eff3c.up.railway.app
 
 ## Repositorios relacionados
@@ -126,3 +133,4 @@ despliega desde su propio repositorio.
 | [banklite-payment-service](https://github.com/Luisortiz2406/banklite-payment-service) | **Llama a:** `/payments` |
 | [banklite-rewards-service](https://github.com/Luisortiz2406/banklite-rewards-service) | **Llama a:** `/rewards` |
 | [banklite-savings-service](https://github.com/Luisortiz2406/banklite-savings-service) | **Llama a:** `/savings` |
+| [banklite-deposit-service](https://github.com/Luisortiz2406/banklite-deposit-service) | **Llama a:** `/deposits` (recargas y webhook de Wompi) |

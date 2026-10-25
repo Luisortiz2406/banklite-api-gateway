@@ -2,7 +2,14 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { accessLog, blockInternalRoutes, proxyAll, requestId, securityHeaders } from './gateway/proxy';
+import {
+  accessLog,
+  blockInternalRoutes,
+  proxyAll,
+  requestId,
+  securityHeaders,
+  webhookBodyLimit,
+} from './gateway/proxy';
 import { rateLimit } from './gateway/rate-limit';
 import { loadUpstreams } from './gateway/routes';
 import { staffSessionCheck } from './gateway/staff-session';
@@ -25,6 +32,7 @@ async function bootstrap() {
   app.use(accessLog());
   app.use(rateLimit());
   app.use(blockInternalRoutes());
+  app.use(webhookBodyLimit());
   // Sesiones del panel administrativo: auth-service decide si siguen vigentes
   const auth = upstreams.find((s) => s.name === 'auth-service');
   if (auth) app.use(staffSessionCheck(auth.url));
