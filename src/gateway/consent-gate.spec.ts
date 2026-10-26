@@ -92,6 +92,27 @@ describe('Gateway: autorización de datos (marca cons)', () => {
     expect(verifyHs256(sign(client()), SECRET)?.sub).toBe('cliente-1');
   });
 
+  it('no arranca si JWT_SECRET trae espacios o comillas alrededor, y el error no muestra el valor', () => {
+    for (const bad of [
+      `   ${SECRET}`,
+      `${SECRET} `,
+      `"${SECRET}"`,
+      `'${SECRET}'`,
+      `${SECRET}
+`,
+    ]) {
+      let message = '';
+      try {
+        consentGate(bad);
+      } catch (err) {
+        message = (err as Error).message;
+      }
+      expect(message).toMatch(/espacios o comillas/);
+      expect(message).not.toContain(SECRET);
+    }
+    expect(() => consentGate(SECRET)).not.toThrow();
+  });
+
   it('en producción no arranca sin JWT_SECRET (o con uno corto); fuera de producción se desactiva', () => {
     const env = process.env.NODE_ENV;
     try {

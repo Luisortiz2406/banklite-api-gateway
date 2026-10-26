@@ -63,6 +63,15 @@ export function verifyHs256(token: string, secret: string, now = Date.now()): Pa
  * servicio lo rechaza igual: la firma no coincide con ninguno de los dos secretos.
  */
 export function consentGate(secret = process.env.JWT_SECRET): RequestHandler {
+  // Un secreto con espacios o comillas alrededor (p. ej. al pegarlo en Railway) no
+  // coincide con el de auth-service: todos los clientes recibirían 401. Mejor no
+  // arrancar con un mensaje claro (Railway sigue sirviendo el despliegue anterior).
+  // Nunca se muestra el valor.
+  if (secret && (secret !== secret.trim() || /^["']|["']$/.test(secret))) {
+    throw new Error(
+      'JWT_SECRET tiene espacios o comillas al inicio o al final: escríbela sin ellos (en Railway, exactamente ${{shared.JWT_SECRET}}).',
+    );
+  }
   const enabled = !!secret && secret.length >= MIN_SECRET_LENGTH;
   if (!enabled) {
     if (process.env.NODE_ENV === 'production') {
