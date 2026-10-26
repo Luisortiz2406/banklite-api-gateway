@@ -30,6 +30,12 @@ frontend y las reenvía al microservicio que corresponde según el prefijo de la
   responde 404 desde afuera y nunca reenvía un `x-internal-key` que venga del cliente.
 - Rechaza rutas ambiguas (barras dobles, `%2F`, `..`) antes de enrutar.
 - **CORS** solo para los dominios del frontend (`CORS_ORIGINS`).
+- **Autorización de datos**: verifica la firma del token de cliente con `JWT_SECRET` y, si no trae
+  la marca `cons` (aceptó la versión vigente de la política y los términos), responde **403
+  `CONSENTIMIENTO_REQUERIDO`** (el frontend muestra el modal). Firma inválida, `alg` distinto o
+  vencido → 401. Permitido sin `cons`: `/auth/consentimientos`, `/auth/consentimientos/estado`,
+  `/auth/refresh-token`, `/auth/login`, `/auth/register`. Los tokens de **empleado** pasan sin
+  cambios (panel `/admin`). En producción no arranca sin `JWT_SECRET`.
 - **IP real del cliente**: la toma del encabezado del proxy de Railway (`CLIENT_IP_HEADER=x-real-ip`)
   o de la conexión directa, la valida y se la pasa a los servicios en `x-client-ip` (descarta la
   que mande el cliente). No se escribe en los logs. Comprobación: `GET /health/client-ip` con
@@ -99,6 +105,7 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 | `RATE_LIMIT_VERIFY_PER_MIN` | No | `10` | Límite para el envío de códigos de verificación. |
 | `RATE_LIMIT_WEBHOOK_PER_MIN` | No | `60` | Límite del webhook de Wompi. |
 | `WEBHOOK_MAX_BODY_BYTES` | No | `65536` | Tamaño máximo del cuerpo del webhook de Wompi. |
+| `JWT_SECRET` | **Sí** en producción | — | El de auth-service (`${{shared.JWT_SECRET}}` en Railway). Verifica los tokens de cliente para exigir la autorización de datos. Vacía fuera de producción: control desactivado. |
 | `CLIENT_IP_HEADER` | En Railway | `x-real-ip` | Encabezado del proxy de entrada con la IP del cliente. Vacía: la conexión directa (local). |
 | `CLIENT_IP_DEBUG` | No | `false` | `true` habilita `GET /health/client-ip` (prefijo y fuente de la IP de quien llama), solo para comprobar la configuración. |
 
