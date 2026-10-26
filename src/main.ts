@@ -11,6 +11,7 @@ import {
   webhookBodyLimit,
 } from './gateway/proxy';
 import { clientIp, clientIpDiagnostics } from './gateway/client-ip';
+import { consentGate } from './gateway/consent-gate';
 import { rateLimit } from './gateway/rate-limit';
 import { loadUpstreams } from './gateway/routes';
 import { staffSessionCheck } from './gateway/staff-session';
@@ -36,6 +37,8 @@ async function bootstrap() {
   app.use(clientIpDiagnostics());
   app.use(blockInternalRoutes());
   app.use(webhookBodyLimit());
+  // Clientes sin la autorización de datos vigente: 403 (los empleados no se ven afectados).
+  app.use(consentGate());
   // Sesiones del panel administrativo: auth-service decide si siguen vigentes
   const auth = upstreams.find((s) => s.name === 'auth-service');
   if (auth) app.use(staffSessionCheck(auth.url));
