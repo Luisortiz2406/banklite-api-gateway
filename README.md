@@ -1,6 +1,6 @@
 # API Gateway (`api-gateway`)
 
-[![CI](https://github.com/Luisortiz2406/banklite-api-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/Luisortiz2406/banklite-api-gateway/actions/workflows/ci.yml)
+[![Despliegue](https://github.com/Luisortiz2406/banklite-api-gateway/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Luisortiz2406/banklite-api-gateway/actions/workflows/deploy.yml)
 
 Único punto de entrada público de **BankLite**. Recibe todas las peticiones del
 frontend y las reenvía al microservicio que corresponde según el prefijo de la ruta.
@@ -117,9 +117,19 @@ npm test
 
 ## Despliegue
 
-Desplegado en Railway **desde este repositorio** (rama `main`), con dominio público.
-`railway.json` en la raíz define el build por `Dockerfile` y el health check en
-`/health`; cada push a `main` redespliega el gateway.
+Lo despliega **GitHub Actions** (`.github/workflows/deploy.yml`, que usa el workflow
+reutilizable de [banklite-pipelines](https://github.com/Luisortiz2406/banklite-pipelines)):
+
+1. **test**: lint, formato, build y pruebas (también en cada pull request).
+2. **docker** (solo `main`): imagen en GHCR `ghcr.io/luisortiz2406/banklite-api-gateway`,
+   etiquetada con el SHA del commit y `latest` (se guardan las últimas 5).
+3. **deploy** (solo `main`): `railway up --ci` sube el commit a Railway, que lo
+   construye con el `Dockerfile` y aplica `railway.json` (health check en `/health`);
+   el job espera a que el despliegue quede activo.
+
+El repositorio está desconectado del autodeploy de Railway: un push a `main` despliega
+solo a través de este pipeline, y únicamente si las pruebas pasan. Rollback: panel de
+Railway → *Deployments* → versión anterior → *Rollback*. Tiene dominio público.
 
 - Gateway: https://api-gateway-production-dd7f.up.railway.app
 - Estado de los 13 servicios y de sus bases: [https://api-gateway-production-dd7f.up.railway.app/health](https://api-gateway-production-dd7f.up.railway.app/health)
