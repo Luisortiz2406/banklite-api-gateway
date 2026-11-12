@@ -115,6 +115,10 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 npm test
 ```
 
+Se prueba la IP real del cliente, el bloqueo por consentimiento (`cons`) con verificación de la firma del token, la sesión de empleados, el webhook de Wompi, `/health`, las rutas internas y ambiguas (`routes.spec.ts`), el límite de peticiones por IP (`rate-limit.spec.ts`) y el proxy contra servicios HTTP locales: enrutamiento por prefijo, encabezados descartados, 502/504 y la clave interna que nunca se reenvía (`proxy.spec.ts`).
+
+**Cobertura:** el pipeline la muestra en el resumen de cada corrida y exige un mínimo de 70 % de líneas y 50 % de ramas (`umbral-lineas` y `umbral-ramas` en `deploy.yml`). Hoy está en 97,2 % de líneas y 91,4 % de ramas.
+
 ## Despliegue
 
 Lo despliega **GitHub Actions** (`.github/workflows/deploy.yml`, que usa el workflow
