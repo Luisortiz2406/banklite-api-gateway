@@ -14,6 +14,7 @@ import { clientIp, clientIpDiagnostics } from './gateway/client-ip';
 import { consentGate } from './gateway/consent-gate';
 import { rateLimit } from './gateway/rate-limit';
 import { loadUpstreams } from './gateway/routes';
+import { MetricsService } from './metrics/metrics.service';
 import { staffSessionCheck } from './gateway/staff-session';
 
 async function bootstrap() {
@@ -29,6 +30,9 @@ async function bootstrap() {
   });
 
   const upstreams = loadUpstreams();
+  // Cuenta y mide cada petición, también las que se rechazan después (las métricas salen por
+  // METRICS_PORT, solo red privada; este puerto público nunca sirve /metrics).
+  app.use(app.get(MetricsService).middleware());
   app.use(securityHeaders());
   app.use(requestId());
   app.use(accessLog());

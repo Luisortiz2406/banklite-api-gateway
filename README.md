@@ -85,6 +85,7 @@ docker run --env-file .env -p 8080:8080 banklite-api-gateway
 |---|---|---|---|
 | `NODE_ENV` | No | `development` | `development` en local; `production` en Railway (lo fija el Dockerfile). |
 | `PORT` | No | `8080` | Puerto HTTP del servicio. |
+| `METRICS_PORT` | No | `9100` | Puerto de `GET /metrics` (Prometheus), solo para la red privada; **nunca** sale por el puerto público (`PORT`), donde `/metrics` da 404. `off` lo apaga. |
 | `CORS_ORIGINS` | Sí | — | Dominios del frontend separados por comas (obligatoria en producción, sin `*`). |
 | `AUTH_SERVICE_URL` | Sí | `http://localhost:3001` | URL interna de auth-service. |
 | `ACCOUNT_SERVICE_URL` | Sí | `http://localhost:3002` | URL interna de account-service. |
