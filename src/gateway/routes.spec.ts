@@ -53,6 +53,10 @@ describe('rutas del gateway', () => {
   describe('rutas internas (servicio a servicio): desde afuera dan 404', () => {
     it.each([
       ['GET', '/internal/anything'],
+      ['GET', '/metrics'],
+      ['POST', '/metrics/'],
+      ['GET', '/METRICS'],
+      ['GET', '/metrics/otra'],
       ['POST', '/ledger/internal/rewards'],
       ['GET', '/otp/send'],
       ['POST', '/notifications'],

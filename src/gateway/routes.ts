@@ -42,6 +42,8 @@ export function matchesPrefix(path: string, prefix: string): boolean {
 // llaman por la red privada; desde afuera el gateway responde 404.
 const INTERNAL_ROUTES: { method?: string; pattern: RegExp }[] = [
   { pattern: /^\/internal(\/|$)/ },
+  // Las métricas salen por su propio puerto (red privada), nunca por el público.
+  { pattern: /^\/metrics(\/|$)/ },
   { pattern: /^\/ledger\/internal(\/|$)/ },
   { pattern: /^\/otp(\/|$)/ },
   { method: 'POST', pattern: /^\/notifications\/?$/ },
